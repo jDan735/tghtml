@@ -41,8 +41,8 @@ def tghtml(page, tagBlocklist=[]):
                 except Exception:
                     pass
 
-        allowtags = ["b", "strong", "i", "em", "code", "s",
-                     "strike", "del", "u", "pre"]
+        allowedTags = ["b", "strong", "i", "em", "code", "s",
+                       "strike", "del", "u", "pre"]
 
         page = str(soup)
 
@@ -52,7 +52,7 @@ def tghtml(page, tagBlocklist=[]):
         page = unTag("p", page)
 
         for tag in soup():
-            if not (tag.name in allowtags):
+            if not (tag.name in allowedTags):
                 page = unTag(tag.name, page)
 
         return page
