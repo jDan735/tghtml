@@ -1,3 +1,5 @@
+import re
+
 from bs4 import BeautifulSoup
 
 
@@ -26,17 +28,21 @@ def tghtml(page, tagBlocklist=[]):
         soup = soup.p
         for tag in soup():
             for attribute in ["class", "title", "href", "style", "name",
-                              "id", "dir", "lang", "rel"]:
+                              "id", "dir", "lang", "rel", "src", "alt",
+                              "height", "width"]:
                 try:
                     del tag[attribute]
                 except Exception:
                     pass
+
+        soup = re.sub(r"\[.{0,}?\]", "", str(soup))
 
         return str(soup).replace("<p>", "") \
                         .replace("<a>", "") \
                         .replace("<span>", "") \
                         .replace("</p>", "") \
                         .replace("</a>", "") \
+                        .replace("<img/>", "") \
                         .replace("</span>", "")
 
     except Exception as e:
