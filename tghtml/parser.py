@@ -35,7 +35,7 @@ def tghtml(page, tagBlocklist=[]):
         for tag in soup():
             for attribute in ["class", "title", "href", "style", "name",
                               "id", "dir", "lang", "rel", "src", "alt",
-                              "height", "width"]:
+                              "height", "width", "clear"]:
                 try:
                     del tag[attribute]
                 except Exception:
@@ -48,7 +48,9 @@ def tghtml(page, tagBlocklist=[]):
 
         page = re.sub(r"\[.{0,}?\]", "", page)
 
-        page = page.replace("<img/>", "")
+        page = page.replace("<img/>", "") \
+                   .replace("<br/>", "") \
+                   .replace("<br>", "")
         page = unTag("p", page)
 
         for tag in soup():
