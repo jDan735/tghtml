@@ -33,9 +33,7 @@ def tghtml(page, tagBlocklist=[]):
         soup = soup.p
 
         for tag in soup():
-            for attribute in ["class", "title", "href", "style", "name",
-                              "id", "dir", "lang", "rel", "src", "alt",
-                              "height", "width", "clear"]:
+            for attribute in [*tag.attrs]:
                 try:
                     del tag[attribute]
                 except Exception:
