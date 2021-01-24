@@ -8,6 +8,11 @@ def unTag(tag_name, tag):
               .replace(f"</{tag_name}>", "")
 
 
+def transformTag(html, tag_old, tag_new):
+    return html.replace(f"<{tag_old}>", f"<{tag_new}>") \
+               .replace(f"</{tag_old}>", f"</{tag_new}>")
+
+
 def clearTag(soup):
     for tag in soup():
         for attribute in [*tag.attrs]:
@@ -35,8 +40,14 @@ def clearTag(soup):
     return page
 
 
-def tghtml(page, tagBlocklist=[]):
-    soup = BeautifulSoup(page, 'lxml')
+def tghtml(page, tagBlocklist=[["ol", {"class": "references"}]]):
+    for tag in "ul", "ol":
+        page = transformTag(page, tag, "p")
+
+    page = page.replace("<li>", "• ") \
+               .replace("</li>", "")
+
+    soup = BeautifulSoup(page, "lxml")
 
     try:
         for t in soup.findAll("p"):
@@ -53,6 +64,7 @@ def tghtml(page, tagBlocklist=[]):
         for tag in soup.findAll("p"):
             if tag.text.replace("\n", "") == "":
                 tag.replace_with("")
+
     except Exception:
         pass
 
@@ -60,9 +72,10 @@ def tghtml(page, tagBlocklist=[]):
         p = ""
 
         for tag in soup.findAll("p"):
+            tag = BeautifulSoup(str(tag), "lxml")
             p += unTag("p", str(clearTag(tag))) + "\n"
 
-        soup = BeautifulSoup(p)
+        soup = BeautifulSoup(p, "lxml")
         page = str(clearTag(soup))
 
         return page
