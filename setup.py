@@ -23,6 +23,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: MIT License",
     ],
+    test_suite="tests",
     python_requires=">=3",
     install_requires=[
         "beautifulsoup4",
