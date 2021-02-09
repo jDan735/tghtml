@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 
-def unTag(tag_name, tag):
+def unTag(tag, tag_name):
     return tag.replace(f"<{tag_name}>", "") \
               .replace(f"</{tag_name}>", "")
 
@@ -14,6 +14,9 @@ def transformTag(html, tag_old, tag_new):
 
 
 def clearTag(soup):
+    if soup.__class__.__name__ != "BeautifulSoup":
+        soup = BeautifulSoup(soup, "lxml")
+
     for tag in soup():
         for attribute in [*tag.attrs]:
             try:
@@ -31,11 +34,11 @@ def clearTag(soup):
     page = page.replace("<img/>", "") \
                .replace("<br/>", "") \
                .replace("<br>", "")
-    page = unTag("p", page)
+    page = unTag(page, "p")
 
     for tag in soup():
         if not (tag.name in allowedTags):
-            page = unTag(tag.name, page)
+            page = unTag(page, tag.name)
 
     return page
 
@@ -73,7 +76,7 @@ def tghtml(page, tagBlocklist=[["ol", {"class": "references"}]]):
 
         for tag in soup.findAll("p"):
             tag = BeautifulSoup(str(tag), "lxml")
-            p += unTag("p", str(clearTag(tag))) + "\n"
+            p += unTag(str(clearTag(tag)), "p") + "\n"
 
         soup = BeautifulSoup(p, "lxml")
         page = str(clearTag(soup))
