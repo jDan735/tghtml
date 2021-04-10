@@ -1,6 +1,6 @@
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 
 try:
-    from .parser import *
-except:
+    from .core import TgHTML, untag # noqa
+except Exception:
     pass
