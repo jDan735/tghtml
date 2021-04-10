@@ -29,10 +29,10 @@ class TgHTML:
 
     def _filter(self):
         for tag in "ul", "ol":
-            self._replace_tag(tag, "p")
+            self.html = untag(self.html, tag)
 
-        self.replace(["<li>", "• "],
-                     ["</li>", ""])
+        self.replace(["<li>", "<p>• "],
+                     ["</li>", "</p>"])
 
         for p in self.soup.findAll("p"):
             if "Это статья об" in p.text:
