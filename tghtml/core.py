@@ -2,6 +2,7 @@ import re
 
 from bs4 import BeautifulSoup
 
+
 class TgHTML:
     ALLOWED_TAGS = ["b", "strong", "i", "em", "code", "s",
                     "strike", "del", "u", "pre"]
@@ -19,7 +20,7 @@ class TgHTML:
     @property
     def soup(self):
         return BeautifulSoup(self.html, "lxml")
-    
+
     @property
     def parsed(self):
         self._filter()
@@ -36,7 +37,7 @@ class TgHTML:
         for p in self.soup.findAll("p"):
             if "Это статья об" in p.text:
                 p.replace_with("")
-            
+
             elif p.text.replace("\n", "") == "":
                 p.replace_with("")
 
