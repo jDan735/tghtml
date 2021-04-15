@@ -33,6 +33,9 @@ class TgHTML:
             elif p.text.replace("\n", "") == "":
                 p.replace_with("")
 
+        for tag in self.soup.findAll("sup", {"class": "reference"}):
+            tag.a.replace_with("")
+
         for item in self.blocklist:
             for tag in self.soup.findAll(*item):
                 tag.replace_with("")
@@ -49,8 +52,6 @@ class TgHTML:
                 pass
 
         self.html = str(self.soup)
-        with open("test.txt", "w", encoding="UTF-8") as f:
-            f.write(self.html)
 
         self.replace(["<li>", "<p>• "],
                      ["</li>", "</p>"])
@@ -85,9 +86,9 @@ class TgHTML:
                     del tag[attribute]
                 except Exception:
                     pass
-
+        
+        # html = re.sub(r"\[.{0,}?\]", "", html)
         html = str(soup)
-        html = re.sub(r"\[.{0,}?\]", "", html)
 
         self.replace(["<img/>", ""],
                      ["<br/>", ""],
