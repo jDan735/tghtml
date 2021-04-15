@@ -7,9 +7,11 @@ class TgHTML:
     ALLOWED_TAGS = ["b", "strong", "i", "em", "code", "s",
                     "strike", "del", "u", "pre"]
 
-    def __init__(self, html, blocklist=()):
+    def __init__(self, html, blocklist=(), is_wikipedia=True):
         self.blocklist = blocklist
         self.html = html
+        self.is_wikipedia = is_wikipedia
+        self.soup = BeautifulSoup(self.html, "lxml")
 
     def __repr__(self):
         return self.parsed
@@ -18,22 +20,12 @@ class TgHTML:
         return self.parsed
 
     @property
-    def soup(self):
-        return BeautifulSoup(self.html, "lxml")
-
-    @property
     def parsed(self):
         self._filter()
         self._clean()
         return self.html
 
     def _filter(self):
-        for tag in "ul", "ol":
-            self.html = untag(self.html, tag)
-
-        self.replace(["<li>", "<p>• "],
-                     ["</li>", "</p>"])
-
         for p in self.soup.findAll("p"):
             if "Это статья об" in p.text:
                 p.replace_with("")
@@ -45,7 +37,23 @@ class TgHTML:
             for tag in self.soup.findAll(*item):
                 tag.replace_with("")
 
+        for tag in "ul", "ol":
+            self.html = untag(self.html, tag)
+
+        if self.is_wikipedia:
+            try:
+                for tag in self.soup.findAll("spam", class_="no-wikidata"):
+                    for li in tag.findAll("li"):
+                        tag.replace_with("")
+            except Exception:
+                pass
+
         self.html = str(self.soup)
+        with open("test.txt", "w", encoding="UTF-8") as f:
+            f.write(self.html)
+
+        self.replace(["<li>", "<p>• "],
+                     ["</li>", "</p>"])
 
     def _clean(self):
         p = ""
