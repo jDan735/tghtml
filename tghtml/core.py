@@ -36,6 +36,9 @@ class TgHTML:
         for tag in self.soup.findAll("sup", {"class": "reference"}):
             tag.a.replace_with("")
 
+        for tag in self.soup.findAll("span", class_="noprint"):
+            tag.sup.a.replace_with("")
+
         for item in self.blocklist:
             for tag in self.soup.findAll(*item):
                 tag.replace_with("")
@@ -46,7 +49,7 @@ class TgHTML:
         if self.is_wikipedia:
             try:
                 for tag in self.soup.findAll("spam", class_="no-wikidata"):
-                    for li in tag.findAll("li"):
+                    for _ in tag.findAll("li"):
                         tag.replace_with("")
             except Exception:
                 pass
