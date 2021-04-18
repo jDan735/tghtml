@@ -33,11 +33,20 @@ class TgHTML:
             elif p.text.replace("\n", "") == "":
                 p.replace_with("")
 
-        for tag in self.soup.findAll("sup", {"class": "reference"}):
-            tag.a.replace_with("")
+        try:
+            for tag in self.soup.findAll("img", class_="mwe-math-fallback-image-inline"):
+                tag.replace_with(tag["alt"])
+        except Exception:
+            pass
 
-        for tag in self.soup.findAll("span", class_="noprint"):
-            tag.sup.a.replace_with("")
+        try:
+            for tag in self.soup.findAll("sup", class_="reference"):
+                tag.a.replace_with("")
+
+            for tag in self.soup.findAll("span", class_="noprint"):
+                tag.sup.a.replace_with("")
+        except Exception:
+            pass
 
         for item in self.blocklist:
             for tag in self.soup.findAll(*item):
