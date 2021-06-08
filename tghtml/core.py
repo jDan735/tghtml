@@ -48,12 +48,13 @@ class TgHTML:
         except Exception:
             pass
 
+
         for item in self.blocklist:
-            for tag in self.soup.findAll(*item):
-                tag.replace_with("")
+           for tag in self.soup.findAll(*item):
+               tag.replace_with("")
 
         for tag in "ul", "ol":
-            self.html = untag(self.html, tag)
+           self.html = untag(self.html, tag)
 
         if self.is_wikipedia:
             try:
@@ -64,7 +65,6 @@ class TgHTML:
                 pass
 
         self.html = str(self.soup)
-
         self.replace(["<li>", "<p>• "],
                      ["</li>", "</p>"])
 
@@ -78,9 +78,18 @@ class TgHTML:
         soup = BeautifulSoup(p, "lxml")
         self.html = str(self._clear_tag(soup))
 
+        lines = self.html.split("\n")
+
+        if lines[0].startswith("<i>") and \
+           not lines[0].startswith("<i><b>") and \
+           len([line for line in lines[1:] if line != ""]) > 0:
+            self.html = "\n".join(lines[1:])
+
     def replace(self, *args):
         for arg in args:
             self.html = self.html.replace(*arg)
+
+        self.soup = BeautifulSoup(self.html, "lxml")
 
     def _replace_tag(self, tag, new_tag="p"):
         tag, new_tag = Tag(tag), Tag(new_tag)
@@ -98,7 +107,7 @@ class TgHTML:
                     del tag[attribute]
                 except Exception:
                     pass
-        
+
         # html = re.sub(r"\[.{0,}?\]", "", html)
         html = str(soup)
 
