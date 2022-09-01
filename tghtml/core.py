@@ -1,17 +1,17 @@
 import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 
 class TgHTML:
     ALLOWED_TAGS = ["b", "strong", "i", "em", "code", "s",
-                    "strike", "del", "u", "pre"]
+                    "strike", "del", "u", "pre", "h2"]
 
     def __init__(self, html, blocklist=(), is_wikipedia=True):
         self.blocklist = blocklist
         self.html = html
         self.is_wikipedia = is_wikipedia
-        self.soup = BeautifulSoup(self.html, "lxml")
+        self.soup: BeautifulSoup = BeautifulSoup(self.html, "lxml")
 
     def __repr__(self):
         return self.parsed
@@ -33,11 +33,12 @@ class TgHTML:
             elif p.text.replace("\n", "") == "":
                 p.replace_with("")
 
-        try:
-            for tag in self.soup.findAll("img", class_="mwe-math-fallback-image-inline"):
-                tag.replace_with(tag["alt"])
-        except Exception:
-            pass
+        for math in self.soup.find_all(class_="mwe-math-element"):
+            math.replace_with(
+                math.span.math.semantics.mrow.mstyle.get_text()
+                .replace("\n", "")
+                .replace(" ", "")
+            )
 
         try:
             for tag in self.soup.findAll("sup", class_="reference"):
@@ -47,7 +48,6 @@ class TgHTML:
                 tag.sup.a.replace_with("")
         except Exception:
             pass
-
 
         for item in self.blocklist:
            for tag in self.soup.findAll(*item):
