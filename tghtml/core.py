@@ -1,43 +1,74 @@
-import re
+from dataclasses import dataclass
+from readability import Document
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 
+def get_tag_content(tag: Tag) -> str:
+    return "".join([i.decode() if type(i) is Tag else i for i in tag.contents])
+
+
+
+ALLOWED_TAGS = [
+    "b",
+    "strong",
+    "i",
+    "em",
+    "code",
+    "s",
+    "strike",
+    "del",
+    "u",
+    "pre",
+]
+
+
+@dataclass
 class TgHTML:
-    ALLOWED_TAGS = ["b", "strong", "i", "em", "code", "s",
-                    "strike", "del", "u", "pre"]
+    html: str
+    blocklist: list | tuple = ()
+    is_wikipedia: bool = True
+    enable_preprocess: bool = True
 
-    def __init__(self, html, blocklist=(), is_wikipedia=True):
-        self.blocklist = blocklist
-        self.html = html
-        self.is_wikipedia = is_wikipedia
-        self.soup = BeautifulSoup(self.html, "lxml")
+    def __post_init__(self):
+        self.html: str = self.html.replace("\n", "")
 
-    def __repr__(self):
+        if self.enable_preprocess:
+            self.html = Document(self.html).summary()
+
+        self.soup: BeautifulSoup = BeautifulSoup(self.html, "html.parser")
+
+    def __repr__(self) -> str:
         return self.parsed
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.parsed
 
     @property
     def parsed(self):
         self._filter()
         self._clean()
-        return self.html
+        return self.html.strip().replace("\n", "\n\n")
 
     def _filter(self):
         for p in self.soup.findAll("p"):
-            if "Это статья об" in p.text:
+            if "Это статья о" in p.text:
                 p.replace_with("")
 
             elif p.text.replace("\n", "") == "":
                 p.replace_with("")
 
-        try:
-            for tag in self.soup.findAll("img", class_="mwe-math-fallback-image-inline"):
-                tag.replace_with(tag["alt"])
-        except Exception:
-            pass
+        for math in self.soup.find_all(class_="mwe-math-element"):
+            math.replace_with(
+                BeautifulSoup(
+                    "<code>"
+                    + math.span.math.semantics.mrow.mstyle.get_text()
+                    .replace("\n", "")
+                    .replace(" ", "")
+                    + "</code>",
+                    "html.parser",
+                )
+            )
 
         try:
             for tag in self.soup.findAll("sup", class_="reference"):
@@ -48,94 +79,76 @@ class TgHTML:
         except Exception:
             pass
 
-
         for item in self.blocklist:
-           for tag in self.soup.findAll(*item):
-               tag.replace_with("")
-
-        for tag in "ul", "ol":
-           self.html = untag(self.html, tag)
+            for tag in self.soup.findAll(*item):
+                tag.replace_with("")
 
         if self.is_wikipedia:
             try:
                 for tag in self.soup.findAll("spam", class_="no-wikidata"):
                     for _ in tag.findAll("li"):
                         tag.replace_with("")
+
+                for tag in self.soup.find_all("ol", class_="references"):
+                    tag.replace_with("")
             except Exception:
                 pass
 
+            for tag in self.soup.find_all("span"):
+                if (
+                    getattr(tag, "attrs", {})
+                    or {}
+                    .get("style", "")
+                    .strip()
+                    .replace(" ", "")
+                    .find("font-style:italic")
+                    != -1
+                ):
+                    tag.name = "i"
+
+        for tag in self.soup.find_all("a"):
+            tag.replace_with(tag.text)
+
+        for tag in self.soup.find_all("li"):
+            tag.replace_with(
+                BeautifulSoup("<p>• " + get_tag_content(tag) + "</p>", "html.parser")
+            )
+
+        for tag in self.soup.find_all(["q", "blockquote"]):
+            tag.replace_with(
+                BeautifulSoup(
+                    "<p><i>   «" + get_tag_content(tag) + "»</i></p>", "html.parser"
+                )
+            )
+
+        for tag in self.soup.find_all(["h1"]):
+            tag.replace_with(
+                BeautifulSoup(
+                    "<p><b>" + get_tag_content(tag).upper() + "</b></p>", "html.parser"
+                )
+            )
+
+        for tag in self.soup.find_all(["h2"]):
+            tag.replace_with(
+                BeautifulSoup(
+                    "<p><b>" + get_tag_content(tag) + "</b></p>", "html.parser"
+                )
+            )
+
         self.html = str(self.soup)
-        self.replace(["<li>", "<p>• "],
-                     ["</li>", "</p>"])
 
     def _clean(self):
-        p = ""
+        p = "".join(get_tag_content(tag) + "\n" for tag in self.soup.find_all("p"))
 
-        for tag in self.soup.findAll("p"):
-            tag = BeautifulSoup(str(tag), "lxml")
-            p += untag(str(self._clear_tag(tag)), "p") + "\n"
+        soup = BeautifulSoup(p, "html.parser")
+        self.html = str(self.clear_tag(soup))
 
-        soup = BeautifulSoup(p, "lxml")
-        self.html = str(self._clear_tag(soup))
-
-        lines = self.html.split("\n")
-
-        if lines[0].startswith("<i>") and \
-           not lines[0].startswith("<i><b>") and \
-           len([line for line in lines[1:] if line != ""]) > 0:
-            self.html = "\n".join(lines[1:])
-
-    def replace(self, *args):
-        for arg in args:
-            self.html = self.html.replace(*arg)
-
-        self.soup = BeautifulSoup(self.html, "lxml")
-
-    def _replace_tag(self, tag, new_tag="p"):
-        tag, new_tag = Tag(tag), Tag(new_tag)
-
-        self.replace([tag.start, new_tag.end],
-                     [tag.end, new_tag.end])
-
-    def _clear_tag(self, soup):
-        if soup.__class__.__name__ != "BeautifulSoup":
-            soup = BeautifulSoup(soup, "lxml")
-
+    def clear_tag(self, soup: BeautifulSoup):
         for tag in soup():
             for attribute in [*tag.attrs]:
-                try:
-                    del tag[attribute]
-                except Exception:
-                    pass
+                del tag[attribute]
 
-        # html = re.sub(r"\[.{0,}?\]", "", html)
-        html = str(soup)
+            if tag.name not in ALLOWED_TAGS:
+                tag.replace_with("")
 
-        self.replace(["<img/>", ""],
-                     ["<br/>", ""],
-                     ["<br>", ""])
-
-        html = untag(html, "p")
-
-        for tag in self.soup():
-            if not (tag.name in self.ALLOWED_TAGS):
-                html = untag(html, tag.name)
-
-        return html
-
-
-def untag(tag, tag_name):
-    return tag.replace(f"<{tag_name}>", "") \
-              .replace(f"</{tag_name}>", "")
-
-
-class Tag:
-    def __init__(self, tag_name, text=""):
-        self.start = f"<{tag_name}>"
-        self.end = f"</{tag_name}>"
-        self.name = tag_name
-        self.text = self.start + text + self.end
-
-
-if __name__ == "__main__":
-    print(TgHTML("a"))
+        return str(soup)
