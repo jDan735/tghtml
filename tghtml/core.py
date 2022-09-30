@@ -1,3 +1,4 @@
+import contextlib
 from dataclasses import dataclass
 from readability import Document
 
@@ -6,7 +7,6 @@ from bs4 import BeautifulSoup, Tag
 
 def get_tag_content(tag: Tag) -> str:
     return "".join([i.decode() if type(i) is Tag else i for i in tag.contents])
-
 
 
 ALLOWED_TAGS = [
@@ -70,29 +70,29 @@ class TgHTML:
                 )
             )
 
-        try:
+        with contextlib.suppress(Exception):
             for tag in self.soup.findAll("sup", class_="reference"):
                 tag.a.replace_with("")
 
+        with contextlib.suppress(Exception):
             for tag in self.soup.findAll("span", class_="noprint"):
                 tag.sup.a.replace_with("")
-        except Exception:
-            pass
 
         for item in self.blocklist:
             for tag in self.soup.findAll(*item):
                 tag.replace_with("")
 
+        for template in self.soup.findAll(class_="template"):
+            template.replace_with("")
+
         if self.is_wikipedia:
-            try:
+            with contextlib.suppress(Exception):
                 for tag in self.soup.findAll("spam", class_="no-wikidata"):
                     for _ in tag.findAll("li"):
                         tag.replace_with("")
 
                 for tag in self.soup.find_all("ol", class_="references"):
                     tag.replace_with("")
-            except Exception:
-                pass
 
             for tag in self.soup.find_all("span"):
                 if (
@@ -111,29 +111,22 @@ class TgHTML:
 
         for tag in self.soup.find_all("li"):
             tag.replace_with(
-                BeautifulSoup("<p>• " + get_tag_content(tag) + "</p>", "html.parser")
+                BeautifulSoup(f"<p>• {get_tag_content(tag)}</p>", "html.parser")
             )
 
         for tag in self.soup.find_all(["q", "blockquote"]):
             tag.replace_with(
                 BeautifulSoup(
-                    "<p><i>   «" + get_tag_content(tag) + "»</i></p>", "html.parser"
+                    f"<p><i>«\n   {get_tag_content(tag)}\n»</i></p>", "html.parser"
                 )
             )
 
         for tag in self.soup.find_all(["h1"]):
-            tag.replace_with(
-                BeautifulSoup(
-                    "<p><b>" + get_tag_content(tag).upper() + "</b></p>", "html.parser"
-                )
-            )
+            tag.replace_with(BeautifulSoup(f"<p><b>{get_tag_content(tag).upper()}</b></p>", "html.parser"))
+
 
         for tag in self.soup.find_all(["h2"]):
-            tag.replace_with(
-                BeautifulSoup(
-                    "<p><b>" + get_tag_content(tag) + "</b></p>", "html.parser"
-                )
-            )
+            tag.replace_with(BeautifulSoup(f"<p><b>{get_tag_content(tag)}</b></p>", "html.parser"))
 
         self.html = str(self.soup)
 
