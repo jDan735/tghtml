@@ -28,7 +28,7 @@ class TgHTML:
     html: str
     blocklist: list | tuple = ()
     is_wikipedia: bool = True
-    enable_preprocess: bool = True
+    enable_preprocess: bool = False
 
     def __post_init__(self):
         self.html: str = self.html.replace("\n", "")
@@ -78,9 +78,12 @@ class TgHTML:
             for tag in self.soup.findAll("span", class_="noprint"):
                 tag.sup.a.replace_with("")
 
-        for item in self.blocklist:
-            for tag in self.soup.findAll(*item):
-                tag.replace_with("")
+        for selector in self.blocklist:
+            if not isinstance(selector, str):
+                raise AttributeError("Use css selector instead of dict with params")
+
+            for tag in self.soup.select(selector):
+                tag.extract()
 
         for template in self.soup.findAll(class_="template"):
             template.replace_with("")
@@ -123,7 +126,6 @@ class TgHTML:
 
         for tag in self.soup.find_all(["h1"]):
             tag.replace_with(BeautifulSoup(f"<p><b>{get_tag_content(tag).upper()}</b></p>", "html.parser"))
-
 
         for tag in self.soup.find_all(["h2"]):
             tag.replace_with(BeautifulSoup(f"<p><b>{get_tag_content(tag)}</b></p>", "html.parser"))
