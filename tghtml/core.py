@@ -52,7 +52,7 @@ class TgHTML:
 
     def _filter(self):
         for p in self.soup.findAll("p"):
-            if "Это статья о" in p.text:
+            if "Это статья о" in p.text or "Vide etiam paginam discretivam:" in p.text:
                 p.replace_with("")
 
             elif p.text.replace("\n", "") == "":
@@ -117,7 +117,7 @@ class TgHTML:
         for tag in self.soup.find_all(["q", "blockquote"]):
             tag.replace_with(
                 BeautifulSoup(
-                    "<p><i>   «" + get_tag_content(tag) + "»</i></p>", "html.parser"
+                    "<blockquote>" + get_tag_content(tag) + "</blockquote>", "html.parser"
                 )
             )
 
