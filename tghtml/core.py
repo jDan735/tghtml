@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from readability import Document
 
 from bs4 import BeautifulSoup, Tag
@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup, Tag
 
 def get_tag_content(tag: Tag) -> str:
     return "".join([i.decode() if type(i) is Tag else i for i in tag.contents])
-
 
 
 ALLOWED_TAGS = [
@@ -20,6 +19,7 @@ ALLOWED_TAGS = [
     "del",
     "u",
     "pre",
+    "blockquote"
 ]
 
 
@@ -29,6 +29,7 @@ class TgHTML:
     blocklist: list | tuple = ()
     is_wikipedia: bool = True
     enable_preprocess: bool = True
+    allowed_tags: list = field(default_factory=lambda: ALLOWED_TAGS)
 
     def __post_init__(self):
         self.html: str = self.html.replace("\n", "")
@@ -46,6 +47,7 @@ class TgHTML:
 
     @property
     def parsed(self):
+        print(self.soup)
         self._filter()
         self._clean()
         return self.html.strip().replace("\n", "\n\n")
@@ -80,6 +82,14 @@ class TgHTML:
             pass
 
         for item in self.blocklist:
+            if type(item) == str:
+                x = item.split(".")
+
+                if len(x) > 1:
+                    item = [x[0] or "div", {"class": x[1]}]
+                else:
+                    item = [item]
+
             for tag in self.soup.findAll(*item):
                 tag.replace_with("")
 
@@ -114,12 +124,30 @@ class TgHTML:
                 BeautifulSoup("<p>• " + get_tag_content(tag) + "</p>", "html.parser")
             )
 
-        for tag in self.soup.find_all(["q", "blockquote"]):
+        for tag in self.soup.find_all(["h2"]):
             tag.replace_with(
                 BeautifulSoup(
-                    "<blockquote>" + get_tag_content(tag) + "</blockquote>", "html.parser"
+                    "<p><b>" + get_tag_content(tag) + "</b></p>", "html.parser"
                 )
             )
+
+        for tag in self.soup.find_all(["cite"]):
+            tag.replace_with(
+                BeautifulSoup(
+                    " <i>" + get_tag_content(tag) + "</i>", "html.parser"
+                )
+            )
+
+        for tag in self.soup.find_all("div", {"class": "ts-Цитата"}):
+            child = tag.find("blockquote")
+            new_tag = BeautifulSoup(
+                TgHTML(get_tag_content(child), allowed_tags=["b", "i"]).parsed, "html.parser"
+            )
+
+            tag.replace_with(new_tag)
+
+        for tag in self.soup.find_all("blockquote"):
+            tag.wrap(Tag(name="p"))
 
         for tag in self.soup.find_all(["h1"]):
             tag.replace_with(
@@ -148,7 +176,7 @@ class TgHTML:
             for attribute in [*tag.attrs]:
                 del tag[attribute]
 
-            if tag.name not in ALLOWED_TAGS:
+            if tag.name not in self.allowed_tags:
                 tag.replace_with("")
 
         return str(soup)
