@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tghtml"
-version = "1.1.6"
+version = "1.1.6.post1"
 description = "Simple tool for parse common HTML to Telegram HTML"
 authors = ["Daniel Zakharov <gzdan734@gmail.com>"]
 license = "MIT"

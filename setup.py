@@ -25,8 +25,5 @@ setup(
     ],
     test_suite="tests",
     python_requires=">=3",
-    install_requires=[
-        "beautifulsoup4",
-        "lxml"
-    ]
+    install_requires=["beautifulsoup4", "lxml", "lxml_html_clean", "readability-lxml"],
 )
