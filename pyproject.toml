@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tghtml"
-version = "1.1.5"
+version = "1.1.6"
 description = "Simple tool for parse common HTML to Telegram HTML"
 authors = ["Daniel Zakharov <gzdan734@gmail.com>"]
 license = "MIT"
@@ -9,6 +9,7 @@ license = "MIT"
 python = "^3.10"
 beautifulsoup4 = "^4.11.1"
 readability-lxml = "^0.8.1"
+lxml = {extras = ["html-clean"], version = "^5.2.1"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.3"
