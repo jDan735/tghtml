@@ -1,3 +1,5 @@
+import re
+
 from dataclasses import dataclass, field
 from readability import Document
 
@@ -19,7 +21,7 @@ ALLOWED_TAGS = [
     "del",
     "u",
     "pre",
-    "blockquote"
+    "blockquote",
 ]
 
 
@@ -47,10 +49,14 @@ class TgHTML:
 
     @property
     def parsed(self):
-        print(self.soup)
         self._filter()
         self._clean()
-        return self.html.strip().replace("\n", "\n\n")
+
+        return (
+            re.sub("\n{2,}", "\n", self.html.strip().replace("\ufeff", "\n"))
+            .replace("JDAN_EXTRA_SPACE", "\n")
+            .replace("\n", "\n\n")
+        )
 
     def _filter(self):
         for p in self.soup.findAll("p"):
@@ -107,8 +113,7 @@ class TgHTML:
             for tag in self.soup.find_all("span"):
                 if (
                     getattr(tag, "attrs", {})
-                    or {}
-                    .get("style", "")
+                    or {}.get("style", "")
                     .strip()
                     .replace(" ", "")
                     .find("font-style:italic")
@@ -133,15 +138,14 @@ class TgHTML:
 
         for tag in self.soup.find_all(["cite"]):
             tag.replace_with(
-                BeautifulSoup(
-                    " <i>" + get_tag_content(tag) + "</i>", "html.parser"
-                )
+                BeautifulSoup(" <i>" + get_tag_content(tag) + "</i>", "html.parser")
             )
 
         for tag in self.soup.find_all("div", {"class": "ts-Цитата"}):
             child = tag.find("blockquote")
             new_tag = BeautifulSoup(
-                TgHTML(get_tag_content(child), allowed_tags=["b", "i"]).parsed, "html.parser"
+                TgHTML(get_tag_content(child), allowed_tags=["b", "i"]).parsed,
+                "html.parser",
             )
 
             tag.replace_with(new_tag)
