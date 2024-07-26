@@ -1,5 +1,6 @@
-from tghtml.tghtml2 import TgHTML
+from tghtml.core import TgHTML
 
 
-with open("file.html", encoding="UTF-8") as f:
-    TgHTML(f.read()).parsed
+with open("test.html", encoding="UTF-8") as f:
+    t = TgHTML(f.read()).parsed
+    print(t)

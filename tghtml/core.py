@@ -1,186 +1,160 @@
-import re
+from typing import Optional
+from markdownify import markdownify as html2md
+from markdown import markdown as md2html
+from pyquery import PyQuery as jq
 
-from dataclasses import dataclass, field
-from readability import Document
-
-from bs4 import BeautifulSoup, Tag
-
-
-def get_tag_content(tag: Tag) -> str:
-    return "".join([i.decode() if type(i) is Tag else i for i in tag.contents])
+from pydantic import BaseModel, Field
 
 
-ALLOWED_TAGS = [
-    "b",
-    "strong",
-    "i",
-    "em",
-    "code",
-    "s",
-    "strike",
-    "del",
-    "u",
-    "pre",
-    "blockquote",
-]
+def unwrap(i: int, tag: jq, space: str = "\n\n"):
+    contents = jq(tag).html()
+    if contents is None:
+        jq(tag).remove()
+    else:
+        jq(tag).replace_with(contents + space)
 
 
-@dataclass
-class TgHTML:
-    html: str
-    blocklist: list | tuple = ()
+def remove(i: int, tag: jq):
+    jq(tag).replace_with("")
+
+
+def rename(i: int, tag: jq, tag_name: str):
+    contents = jq(tag).html()
+    if contents is None:
+        jq(tag).remove()
+    else:
+        jq(tag).replace_with((f"<{tag_name}>{contents}</{tag_name}>"))
+
+
+class TgHTML(BaseModel):
+    text: str
+    output: str | None = None
+    markdown: str | None = None
+
+    blocklist: set = {}
+    ALLOWED_TAGS: tuple | set = Field(
+        default=(
+            "b",
+            "strong",
+            "i",
+            "em",
+            "code",
+            "s",
+            "strike",
+            "del",
+            "u",
+            "pre",
+            "blockquote",
+        ),
+        serialization_alias="allowed_tags",
+    )
+
     is_wikipedia: bool = True
     enable_preprocess: bool = True
-    allowed_tags: list = field(default_factory=lambda: ALLOWED_TAGS)
+
+    def __init__(
+        self,
+        text: Optional[str] = None,
+        html: Optional[str] = None,
+        **kwargs,
+    ) -> "TgHTML":  # type: ignore
+        super(TgHTML, self).__init__(text=text or html, **kwargs)
+        self.__post_init__()
 
     def __post_init__(self):
-        self.html: str = self.html.replace("\n", "")
+        # 0. clean html and filter shit
+        d = jq(self.text)
 
-        if self.enable_preprocess:
-            self.html = Document(self.html).summary()
+        d.find("span").filter(
+            lambda i, x: jq(x).attr("style") == "font-style:italic;"
+        ).each(lambda i, x: rename(i, x, "i"))
+        d.find("cite").each(lambda i, x: rename(i, x, "i"))
+        d.find("strong").each(lambda i, x: rename(i, x, "b"))
+        d.find("blockquote blockquote").each(
+            lambda i, x: unwrap(i, x, "")
+        )
+        d.find("p").filter(
+            lambda i, p: p.text is not None
+            and (
+                "Это статья о" in p.text
+                or "Vide etiam paginam discretivam:" in p.text
+            )
+        ).each(remove)
 
-        self.soup: BeautifulSoup = BeautifulSoup(self.html, "html.parser")
-
-    def __repr__(self) -> str:
-        return self.parsed
-
-    def __str__(self) -> str:
-        return self.parsed
-
-    @property
-    def parsed(self):
-        self._filter()
-        self._clean()
-
-        return (
-            re.sub("\n{2,}", "\n", self.html.strip().replace("\ufeff", "\n"))
-            .replace("JDAN_EXTRA_SPACE", "\n")
-            .replace("\n", "\n\n")
+        self.bulk_remove(
+            d,
+            "div.navigation-not-searchable",
+            "table",
+            "aside",
+            ".error",
+            ".noprint",
+            "audio",
+            ".thumb",
+            "span.error",
+            "span.mw-ext-cite-error",
+            "p.hatnote",
+            "figure",
+            "sup.reference a",
+            *self.blocklist,
         )
 
-    def _filter(self):
-        for p in self.soup.findAll("p"):
-            if "Это статья о" in p.text or "Vide etiam paginam discretivam:" in p.text:
-                p.replace_with("")
+        d.find("a").each(lambda i, x: unwrap(i, x, ""))
 
-            elif p.text.replace("\n", "") == "":
-                p.replace_with("")
+        source = (
+            d.html()
+            .replace("<i>", "ITALICRESERVEDSIGN")
+            .replace("</i>", "ITALICRESERVEDSIGN")
+        )
 
-        for math in self.soup.find_all(class_="mwe-math-element"):
-            math.replace_with(
-                BeautifulSoup(
-                    "<code>"
-                    + math.span.math.semantics.mrow.mstyle.get_text()
-                    .replace("\n", "")
-                    .replace(" ", "")
-                    + "</code>",
-                    "html.parser",
-                )
-            )
+        # 1. to markdown
+        self.markdown = html2md(
+            source,
+            bullets="■•",
+        )
 
-        try:
-            for tag in self.soup.findAll("sup", class_="reference"):
-                tag.a.replace_with("")
+        self.markdown = self.markdown.replace(
+            "ITALICRESERVEDSIGN", "_"
+        )
 
-            for tag in self.soup.findAll("span", class_="noprint"):
-                tag.sup.a.replace_with("")
-        except Exception:
-            pass
+        # 2. make some markdown features ignorable
+        #    in next step
+        # self.md = self.md.replace("\n* ", "\n■ ")
 
-        for item in self.blocklist:
-            if type(item) == str:
-                x = item.split(".")
+        # 3. to html
+        html = md2html(self.markdown)  # type: ignore
+        tag = jq(html)
 
-                if len(x) > 1:
-                    item = [x[0] or "div", {"class": x[1]}]
-                else:
-                    item = [item]
+        # 4. remove default html shit like as p and div
+        tag.find("div").each(lambda i, x: unwrap(i, x, ""))
+        tag.find("p").each(unwrap)
 
-            for tag in self.soup.findAll(*item):
-                tag.replace_with("")
+        tag.find("*").filter(
+            lambda i, x: x.tag not in self.ALLOWED_TAGS
+        ).each(remove)
 
-        if self.is_wikipedia:
-            try:
-                for tag in self.soup.findAll("spam", class_="no-wikidata"):
-                    for _ in tag.findAll("li"):
-                        tag.replace_with("")
+        # 5. shitcodded fixes in the end
+        self.output = (
+            str(tag.html())
+            .replace("\n\n", "\n")
+            # .replace("\n\n", "\n")
+            # .replace("\n", "\n\n")
+            .replace("<blockquote>\n", "<blockquote>")
+        )
 
-                for tag in self.soup.find_all("ol", class_="references"):
-                    tag.replace_with("")
-            except Exception:
-                pass
+    def bulk_remove(self, d: jq, *selectors):
+        for sel in selectors:
+            d.find(sel).each(remove)
 
-            for tag in self.soup.find_all("span"):
-                if (
-                    getattr(tag, "attrs", {})
-                    or {}.get("style", "")
-                    .strip()
-                    .replace(" ", "")
-                    .find("font-style:italic")
-                    != -1
-                ):
-                    tag.name = "i"
+    def __str__(self) -> str:
+        return self.output or ""
 
-        for tag in self.soup.find_all("a"):
-            tag.replace_with(tag.text)
+    def __repr__(self) -> str:
+        return self.__str__()
 
-        for tag in self.soup.find_all("li"):
-            tag.replace_with(
-                BeautifulSoup("<p>• " + get_tag_content(tag) + "</p>", "html.parser")
-            )
+    @property
+    def parsed(self) -> str:
+        return self.output or ""
 
-        for tag in self.soup.find_all(["h2"]):
-            tag.replace_with(
-                BeautifulSoup(
-                    "<p><b>" + get_tag_content(tag) + "</b></p>", "html.parser"
-                )
-            )
-
-        for tag in self.soup.find_all(["cite"]):
-            tag.replace_with(
-                BeautifulSoup(" <i>" + get_tag_content(tag) + "</i>", "html.parser")
-            )
-
-        for tag in self.soup.find_all("div", {"class": "ts-Цитата"}):
-            child = tag.find("blockquote")
-            new_tag = BeautifulSoup(
-                TgHTML(get_tag_content(child), allowed_tags=["b", "i"]).parsed,
-                "html.parser",
-            )
-
-            tag.replace_with(new_tag)
-
-        for tag in self.soup.find_all("blockquote"):
-            tag.wrap(Tag(name="p"))
-
-        for tag in self.soup.find_all(["h1"]):
-            tag.replace_with(
-                BeautifulSoup(
-                    "<p><b>" + get_tag_content(tag).upper() + "</b></p>", "html.parser"
-                )
-            )
-
-        for tag in self.soup.find_all(["h2"]):
-            tag.replace_with(
-                BeautifulSoup(
-                    "<p><b>" + get_tag_content(tag) + "</b></p>", "html.parser"
-                )
-            )
-
-        self.html = str(self.soup)
-
-    def _clean(self):
-        p = "".join(get_tag_content(tag) + "\n" for tag in self.soup.find_all("p"))
-
-        soup = BeautifulSoup(p, "html.parser")
-        self.html = str(self.clear_tag(soup))
-
-    def clear_tag(self, soup: BeautifulSoup):
-        for tag in soup():
-            for attribute in [*tag.attrs]:
-                del tag[attribute]
-
-            if tag.name not in self.allowed_tags:
-                tag.replace_with("")
-
-        return str(soup)
+    @property
+    def html(self) -> Optional[str]:
+        return self.text
