@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "tghtml"
-version = "1.2.0"
+version = "1.2.1"
 description = "Simple tool for parse common HTML to Telegram HTML"
 authors = ["Daniel Zakharov <gzdan734@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+beautifulsoup4 = "^4.10.0"
 markdownify = "^0.13.1"
 pyquery = "^2.0.0"
 markdown = "^3.6"
