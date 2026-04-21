@@ -1,12 +1,16 @@
-from typing_extensions import override
 from dataclasses import dataclass
+
+from pylatexenc.latex2text import LatexNodes2Text
 from selectolax.lexbor import (
     LexborHTMLParser,
     LexborNode,
 )
+from typing_extensions import override
+
+from ._tags import B, Br, Code, I
 
 
-from ._tags import I, B, Br, Code
+latex = LatexNodes2Text()
 
 
 @dataclass
@@ -48,7 +52,7 @@ class AddSpaceToParagraphsPatch(SimplePatch):
 
 @dataclass
 class BlocklistPatch(ReplacePatch):
-    blocklist: tuple[str]
+    blocklist: list[str]
 
     @property
     def SELECTOR(self) -> str:
@@ -79,7 +83,13 @@ class MathPatch(ReplacePatch):
 
     @override
     def iterate(self, el: LexborNode):
-        return Code(el.css_first("mi").inner_html)
+        return Code(
+            latex.latex_to_text(
+                (el.css_first("annotation").inner_html or "").replace(
+                    r"\tfrac", r"\frac"
+                )
+            )
+        )
 
 
 class FixLists(ReplacePatch):

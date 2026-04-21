@@ -28,6 +28,7 @@ DEFAULT_BLOCKLIST = [
     "tdclass",
     ".infobox-label",
     "td",
+    "figure",
 ]
 
 
@@ -35,10 +36,16 @@ DEFAULT_BLOCKLIST = [
 class TgHTML:
     source_html: Any
     blocklist: list[str] = field(default_factory=lambda: DEFAULT_BLOCKLIST)
+    enable_preprocess: bool = False
     filtered: str = field(init=False, default="")
     parsed: str = field(init=False, default="")
 
     def __post_init__(self):
+        if self.blocklist != DEFAULT_BLOCKLIST:
+            blocklist = self.blocklist + DEFAULT_BLOCKLIST
+        else:
+            blocklist = self.blocklist
+
         sel = LexborHTMLParser(self.source_html.__str__()).css_first("body")
 
         for patch in sum(
@@ -49,7 +56,7 @@ class TgHTML:
             [],
         ):
             if patch == BlocklistPatch:
-                BlocklistPatch(sel=sel, blocklist=self.blocklist)
+                BlocklistPatch(sel=sel, blocklist=blocklist)
                 continue
 
             patch(sel)
