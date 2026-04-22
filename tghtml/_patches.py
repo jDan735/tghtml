@@ -13,6 +13,10 @@ from ._tags import B, Br, Code, I
 latex = LatexNodes2Text()
 
 
+def get_node(html: str):
+    return LexborHTMLParser(html).css_first("body")
+
+
 @dataclass
 class Patch:
     sel: LexborNode | LexborHTMLParser
@@ -97,4 +101,4 @@ class FixLists(ReplacePatch):
 
     @override
     def iterate(self, el: LexborNode):
-        return "■ " + el.inner_html + "END098"
+        return get_node("■ " + el.inner_html + "END098")

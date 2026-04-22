@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from haitch import b, code, h2, i, li, p, span, ul
+from haitch import a, b, code, h2, i, li, p, span, ul
 
 from tghtml import TgHTML
 
@@ -32,6 +32,10 @@ class TestStringMethods(unittest.TestCase):
             p(span("Italic Text", style="font-face: italic;")),
             i("Italic Text"),
         )
+
+    def test_check_proper_links_logic(self):
+        self.assertHTML(a("test", href="ping"), "test")
+        self.assertHTML(ul(li(a("test", href="abo"))), "■ test")
 
     def test_big_text(self):
         actual = TgHTML((HTML_PATH / "llvm-wikipedia.html").read_text())
@@ -67,6 +71,16 @@ class TestStringMethods(unittest.TestCase):
         self.assertHTML(
             ul(li("Rule must be followed"), li("And another list element")),
             "■ Rule must be followed\n■ And another list element",
+        )
+
+    def test_spaces_in_pages(self):
+        self.assertHTML(
+            (HTML_PATH / "enwiki-Fad Gadget.html").read_text(),
+            """
+<b>Francis John Tovey</b> (8 September 1956 – 3 April 2002), known also by his stage name <b>Fad Gadget</b>, was a British avant-garde electronic musician and vocalist. He was a proponent of both new wave and early industrial music, fusing pop-structured songs with mechanised experimentation.
+
+As Fad Gadget, his music was characterised by the use of synthesizers in conjunction with sounds of found objects, including drills and electric razors. His bleak, sarcastic and darkly humorous lyrics were filled with biting social commentary toward subjects such as machinery, industrialisation, consumerism, human sexuality, mass media, religion, domestic violence and dehumanization, often sung in a deadpan voice.    
+        """.strip(),
         )
 
     def assertStr(self, first, second):

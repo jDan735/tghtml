@@ -71,6 +71,8 @@ class TgHTML:
             .strip()
         )
 
+        parsed = re.sub(r" *\n *", "\n", parsed)
+
         object.__setattr__(
             self,
             "parsed",
