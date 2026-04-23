@@ -62,24 +62,19 @@ class TgHTML:
             patch(sel)
 
         res = sel.css_first("body").inner_html
-        parsed = (
-            clean(
-                (res or "").replace("<br>", "\n"),
-                tags=ALLOWED_TAGS,
-            )
-            .replace("\n", "\n\n")
-            .strip()
+        parsed = clean(
+            (res or "").replace("<br>", "\n"),
+            tags=ALLOWED_TAGS,
         )
 
-        parsed = re.sub(r" *\n *", "\n", parsed)
+        object.__setattr__(self, "parsed", self.remove_spaces(parsed))
 
-        object.__setattr__(
-            self,
-            "parsed",
-            re.sub(r"\n{3,}", r"\n\n", parsed)
-            .replace("END098■", "\n■")
-            .replace("END098", ""),
-        )
+    def remove_spaces(self, text: str) -> str:
+        _ = text.replace("\n", "\n\n").strip()
+        re.sub(r" *\n *", "\n", _)
+        re.sub(r"\n{3,}", r"\n\n", _)
+        re.sub(" *", " ", _)
+        return _.replace("END098■", "\n■").replace("END098", "")
 
     def __str__(self):
         return self.parsed
