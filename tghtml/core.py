@@ -41,11 +41,7 @@ class TgHTML:
     parsed: str = field(init=False, default="")
 
     def __post_init__(self):
-        if self.blocklist != DEFAULT_BLOCKLIST:
-            blocklist = self.blocklist + DEFAULT_BLOCKLIST
-        else:
-            blocklist = self.blocklist
-
+        blocklist = set(self.blocklist + DEFAULT_BLOCKLIST)
         sel = LexborHTMLParser(self.source_html.__str__()).css_first("body")
 
         for patch in sum(
@@ -71,9 +67,9 @@ class TgHTML:
 
     def remove_spaces(self, text: str) -> str:
         _ = text.replace("\n", "\n\n").strip()
-        re.sub(r" *\n *", "\n", _)
-        re.sub(r"\n{3,}", r"\n\n", _)
-        re.sub(" *", " ", _)
+        _ = re.sub(r" *\n *", "\n", _)
+        _ = re.sub(r"\n{3,}", r"\n\n", _)
+        _ = re.sub(" {2,}", " ", _)
         return _.replace("END098■", "\n■").replace("END098", "")
 
     def __str__(self):

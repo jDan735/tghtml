@@ -1,3 +1,4 @@
+from typing import Iterable
 from dataclasses import dataclass
 
 from pylatexenc.latex2text import LatexNodes2Text
@@ -56,7 +57,7 @@ class AddSpaceToParagraphsPatch(SimplePatch):
 
 @dataclass
 class BlocklistPatch(ReplacePatch):
-    blocklist: list[str]
+    blocklist: Iterable[str]
 
     @property
     def SELECTOR(self) -> str:
