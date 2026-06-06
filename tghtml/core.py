@@ -29,6 +29,10 @@ DEFAULT_BLOCKLIST = [
     ".infobox-label",
     "td",
     "figure",
+    "div.metadata",
+    ".noprint",
+    ".floatright",
+    ".error",
 ]
 
 

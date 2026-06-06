@@ -83,8 +83,28 @@ As Fad Gadget, his music was characterised by the use of synthesizers in conjunc
         """.strip(),
         )
 
+    def test_metadata_hidden(self):
+        self.assertHTML(
+            (HTML_PATH / "enwiki-Transcarpathian-referendum.html").read_text(),
+            """
+<b>1 декабря 1991 года</b> в один день с всеукраинским референдумом и первыми выборами президента Украины состоялся <b>Закарпатский общеобластной референдум</b>. На референдум был вынесен вопрос «О предоставлении Закарпатской области статуса автономного края в составе Украины».
+
+Ещё до вхождения в состав СССР 30 января 1946 года Подкарпатская Русь (историческое название края) являлась республикой, с автономным статусом, в составе Чехословакии, в соответствии с конституционным законом 326\\1938, от 22 ноября 1938.
+""".strip(),
+        )
+
+    def test_math_pages_are_correct(self):
+        self.assertHTMLfile(
+            "pi.html",
+            """
+<code>π</code>, <b>π</b> (произносится «<b>пи</b>»)&nbsp;— математическая постоянная, равная отношению длины окружности к её диаметру. Числу «пи» также можно дать множество других определений, например это отношение полупериода функции <code>y=sin(x)</code> к её максимальному значению. Обозначается буквой греческого алфавита «π». На декабрь 2025 года известны первые 314 триллионов (или 3,14*1014) знаков числа «пи» после запятой.""",
+        )
+
     def assertStr(self, first, second):
-        self.assertEqual(first.__str__(), second.__str__())
+        self.assertEqual(first.__str__(), second.__str__().strip())
 
     def assertHTML(self, first, second):
         self.assertStr(TgHTML(first), second)
+
+    def assertHTMLfile(self, file: str, second):
+        self.assertHTML((HTML_PATH / file).read_text(), second)

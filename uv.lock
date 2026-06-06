@@ -127,6 +127,11 @@ dependencies = [
     { name = "selectolax" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "tghtml" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "haitch", specifier = ">=0.15.0" },
@@ -134,6 +139,9 @@ requires-dist = [
     { name = "pylatexenc", specifier = ">=2.10" },
     { name = "selectolax", specifier = ">=0.4.7" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "tghtml", editable = "." }]
 
 [[package]]
 name = "typing-extensions"
