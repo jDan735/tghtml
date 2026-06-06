@@ -23,7 +23,7 @@ jobs:
       with:
         version: latest
         enable-cache: true
-    # - name: Install dependencies
-    #   run: uv pip install -r pyproject.toml --group package --group test --group types
+    - name: Install dependencies
+      run: uv sync 
     - name: Type check with ty
       run: uvx ty check
