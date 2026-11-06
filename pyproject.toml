@@ -14,34 +14,19 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "haitch>=0.15.0",
     "nh3>=0.3.4",
     "pylatexenc>=2.10",
     "selectolax>=0.4.7",
 ]
 
-[tool.uv.build-backend]
-module-root = ""
-
-[tool.uv.workspace]
-members = [
-    ".",
-]
-
-[tool.uv.sources]
-tghtml = { workspace = true }
-
-[build-system]
-requires = ["uv_build>=0.10.2,<0.11.0"]
-build-backend = "uv_build"
+[tool.pdm.scripts]
+test = {cmd = "python -m unittest tests/tests.py"}
 
 [dependency-groups]
 dev = [
     "tghtml",
+    "haitch>=0.15.0",
 ]
 
-[tool.ruff]
+[tool.black]
 line-length = 80
-
-[tool.pdm.scripts]
-test = {cmd = "python -m unittest tests/tests.py"}
