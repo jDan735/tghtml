@@ -8,6 +8,9 @@ def Tag(tag_name: str, content: str | None) -> LexborNode:
         is_fragment=True
     )
 
+    if a is None:
+        raise AttributeError("Is this fragment of html broken?")
+
     return a.root
 
 
