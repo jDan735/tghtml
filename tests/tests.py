@@ -47,8 +47,8 @@ class TestStringMethods(unittest.TestCase):
         )
 
     def test_complex_text(self):
-        self.assertHTML(
-            (HTML_PATH / "test-page-from-ru-wikipedia.html").read_text(),
+        self.assertHTMLfile(
+            "test-page-from-ru-wikipedia.html",
             "<b>test</b> — UNIX-утилита для проверки типа файла и сравнения значений. Возвращает код возврата 0 (ложь) или 1 (истина) в зависимости вычисления выражения <code>expr</code>. Выражения могут быть как унарными, так и бинарными. Унарные выражения часто используются для проверки статуса файла. Также допустимо сравнение чисел и строк.\n\nНачиная с UNIX System III утилита стала встроенной, также появилась вторая её форма - [.",
         )
 
@@ -74,23 +74,21 @@ class TestStringMethods(unittest.TestCase):
         )
 
     def test_spaces_in_pages(self):
-        self.assertHTML(
-            (HTML_PATH / "enwiki-Fad Gadget.html").read_text(),
+        self.assertHTMLfile(
+            "enwiki-Fad Gadget.html",
             """
 <b>Francis John Tovey</b> (8 September 1956 – 3 April 2002), known also by his stage name <b>Fad Gadget</b>, was a British avant-garde electronic musician and vocalist. He was a proponent of both new wave and early industrial music, fusing pop-structured songs with mechanised experimentation.
 
-As Fad Gadget, his music was characterised by the use of synthesizers in conjunction with sounds of found objects, including drills and electric razors. His bleak, sarcastic and darkly humorous lyrics were filled with biting social commentary toward subjects such as machinery, industrialisation, consumerism, human sexuality, mass media, religion, domestic violence and dehumanization, often sung in a deadpan voice.    
-        """.strip(),
+As Fad Gadget, his music was characterised by the use of synthesizers in conjunction with sounds of found objects, including drills and electric razors. His bleak, sarcastic and darkly humorous lyrics were filled with biting social commentary toward subjects such as machinery, industrialisation, consumerism, human sexuality, mass media, religion, domestic violence and dehumanization, often sung in a deadpan voice.""",
         )
 
     def test_metadata_hidden(self):
-        self.assertHTML(
-            (HTML_PATH / "enwiki-Transcarpathian-referendum.html").read_text(),
+        self.assertHTMLfile(
+            "enwiki-Transcarpathian-referendum.html",
             """
 <b>1 декабря 1991 года</b> в один день с всеукраинским референдумом и первыми выборами президента Украины состоялся <b>Закарпатский общеобластной референдум</b>. На референдум был вынесен вопрос «О предоставлении Закарпатской области статуса автономного края в составе Украины».
 
-Ещё до вхождения в состав СССР 30 января 1946 года Подкарпатская Русь (историческое название края) являлась республикой, с автономным статусом, в составе Чехословакии, в соответствии с конституционным законом 326\\1938, от 22 ноября 1938.
-""".strip(),
+Ещё до вхождения в состав СССР 30 января 1946 года Подкарпатская Русь (историческое название края) являлась республикой, с автономным статусом, в составе Чехословакии, в соответствии с конституционным законом 326\\1938, от 22 ноября 1938.""",
         )
 
     def test_math_pages_are_correct(self):
