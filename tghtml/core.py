@@ -71,6 +71,7 @@ class TgHTML:
 
     def remove_spaces(self, text: str) -> str:
         _ = text.replace("\n", "\n\n").strip()
+        _ = _.replace(r"<\b>\n\n", r"<\b>\n")
         _ = re.sub(r" *\n *", "\n", _)
         _ = re.sub(r"\n{3,}", r"\n\n", _)
         _ = re.sub(" {2,}", " ", _)
