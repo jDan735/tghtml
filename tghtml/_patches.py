@@ -42,13 +42,6 @@ class ReplacePatch(Patch):
 
 
 @dataclass
-class FixItalicPatch(SimplePatch):
-    def __post_init__(self):
-        for el in self.sel.css("span[style='font-face: italic;']"):
-            el.replace_with(I(el.inner_html))
-
-
-@dataclass
 class AddSpaceToParagraphsPatch(SimplePatch):
     def __post_init__(self):
         for el in self.sel.css("p"):
@@ -67,7 +60,7 @@ class BlocklistPatch(ReplacePatch):
         return ""
 
 
-class FixItalicSimplePatch(ReplacePatch):
+class FixItalicPatch(ReplacePatch):
     SELECTOR = "span[style='font-face: italic;']"
 
     @override
