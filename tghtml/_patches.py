@@ -52,9 +52,8 @@ class AddSpaceToParagraphsPatch(SimplePatch):
 class BlocklistPatch(ReplacePatch):
     blocklist: Iterable[str]
 
-    @override
     @property
-    def SELECTOR(self) -> str:
+    def SELECTOR(self) -> str: # type: ignore[override]
         return ", ".join(self.blocklist)
 
     def iterate(self, el: LexborNode):
