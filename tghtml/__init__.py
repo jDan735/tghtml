@@ -1,6 +1,6 @@
-__version__ = "1.2.1"
+__version__ = "2.0.4"
 
 from .core import TgHTML
 
 
-__all__ = [TgHTML]
+__all__ = ["TgHTML"]
