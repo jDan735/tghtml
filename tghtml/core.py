@@ -37,6 +37,7 @@ DEFAULT_BLOCKLIST = [
     "div.quotebox[role=\"complementary\"]",
     ".navigation-not-searchable",
     "div.noexcerpt",
+    "span.noexcerpt.geo-inline-hidden",
 ]
 
 

@@ -112,6 +112,12 @@ Many media outlets presumed that he had meant to type "coverage". Sean Spicer, t
             """
         )
 
+    def test_coordinates_removed(self):
+        self.assertHTMLfile(
+            "Kazan Region canada.html",
+            """The <b>Kazan Region</b> is a physiographic province of Canada and the part of the Canadian Shield that is located in extreme north-eastern Alberta, northern Manitoba, and Saskatchewan, and also in parts of the Northwest Territories and Nunavut."""
+        )
+
     def assertStr(self, first, second):
         self.assertEqual(first.__str__(), second.__str__().strip())
 
