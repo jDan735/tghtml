@@ -26,7 +26,7 @@ DEFAULT_BLOCKLIST = [
     ".reference",
     "table",
     "tdclass",
-    ".infobox-label",
+    ".infobox, .infobox-label",
     "td",
     "figure",
     "div.metadata",
@@ -36,6 +36,7 @@ DEFAULT_BLOCKLIST = [
     "div.preview-warning",
     "div.quotebox[role=\"complementary\"]",
     "div.navigation-not-searchable",
+    ".noexcerpt",
 ]
 
 
