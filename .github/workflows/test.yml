@@ -24,7 +24,7 @@ jobs:
         cache-dependency-glob: "uv.lock"
 
     - name: Install dependencies
-      run: uv sync
+      run: uv sync --dev
 
     - name: Run unit tests
       run: uv run python -m unittest tests/tests.py

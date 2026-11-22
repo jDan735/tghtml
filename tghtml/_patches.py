@@ -52,6 +52,7 @@ class AddSpaceToParagraphsPatch(SimplePatch):
 class BlocklistPatch(ReplacePatch):
     blocklist: Iterable[str]
 
+    @override
     @property
     def SELECTOR(self) -> str:
         return ", ".join(self.blocklist)
@@ -81,9 +82,12 @@ class MathPatch(ReplacePatch):
 
     @override
     def iterate(self, el: LexborNode):
+        if not (xml := el.css_first("annotation")):
+            return ""
+
         return Code(
             latex.latex_to_text(
-                (el.css_first("annotation").inner_html or "").replace(
+                (xml.inner_html or "").replace(
                     r"\tfrac", r"\frac"
                 )
             )
