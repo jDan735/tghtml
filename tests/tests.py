@@ -9,6 +9,8 @@ HTML_PATH = Path("tests") / Path("html_examples")
 
 
 class TestStringMethods(unittest.TestCase):
+    maxDiff = None
+
     def test_is_working(self):
         self.assertHTML(
             p(i("abc")),
@@ -102,7 +104,7 @@ As Fad Gadget, his music was characterised by the use of synthesizers in conjunc
         self.assertHTMLfile(
             "Covfefe.html",
             """
-<i><b>Covfefe</b></i> (/koʊˈfɛfi/ ⓘ <i title="English pronunciation respelling">koh-FEF-ee</i>) is a word, widely presumed to be a typographical error, that Donald Trump used in a tweet during his first term as President of the United States. It quickly became an Internet meme.
+<i><b>Covfefe</b></i> (/koʊˈfɛfi/ <i title="English pronunciation respelling">koh-FEF-ee</i>) is a word, widely presumed to be a typographical error, that Donald Trump used in a tweet during his first term as President of the United States. It quickly became an Internet meme.
 
 Six minutes after midnight (EDT) on May 31, 2017, Trump tweeted "Despite the constant negative press covfefe". He deleted the tweet six hours later.
 
