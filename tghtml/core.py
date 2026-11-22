@@ -34,6 +34,7 @@ DEFAULT_BLOCKLIST = [
     ".floatright",
     ".error",
     "div.preview-warning",
+    "div.quotebox[role=\"complementary\"]",
 ]
 
 
