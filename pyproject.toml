@@ -28,5 +28,8 @@ dev = [
     "haitch>=0.15.0",
 ]
 
+[tool.mypy]
+disable_error_code = ["import-untyped", "import-not-found"]
+
 [tool.black]
 line-length = 80
