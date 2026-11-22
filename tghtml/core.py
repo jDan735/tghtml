@@ -35,6 +35,7 @@ DEFAULT_BLOCKLIST = [
     ".error",
     "div.preview-warning",
     "div.quotebox[role=\"complementary\"]",
+    "div.navigation-not-searchable",
 ]
 
 

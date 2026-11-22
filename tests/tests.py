@@ -98,6 +98,18 @@ As Fad Gadget, his music was characterised by the use of synthesizers in conjunc
 <code>π</code>, <b>π</b> (произносится «<b>пи</b>»)&nbsp;— математическая постоянная, равная отношению длины окружности к её диаметру. Числу «пи» также можно дать множество других определений, например это отношение полупериода функции <code>y=sin(x)</code> к её максимальному значению. Обозначается буквой греческого алфавита «π». На декабрь 2025 года известны первые 314 триллионов (или 3,14*1014) знаков числа «пи» после запятой.""",
         )
 
+    def test_complex_css_selectors(self):
+        self.assertHTMLfile(
+            "Covfefe.html",
+            """
+<i><b>Covfefe</b></i> (/koʊˈfɛfi/ ⓘ <i title="English pronunciation respelling">koh-FEF-ee</i>) is a word, widely presumed to be a typographical error, that Donald Trump used in a tweet during his first term as President of the United States. It quickly became an Internet meme.
+
+Six minutes after midnight (EDT) on May 31, 2017, Trump tweeted "Despite the constant negative press covfefe". He deleted the tweet six hours later.
+
+Many media outlets presumed that he had meant to type "coverage". Sean Spicer, then White House press secretary, stated: "I think the president and a small group of people know exactly what he meant."
+            """
+        )
+
     def assertStr(self, first, second):
         self.assertEqual(first.__str__(), second.__str__().strip())
 
