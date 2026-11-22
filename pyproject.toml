@@ -1,6 +1,6 @@
 [project]
 name = "tghtml"
-version = "2.0.3"
+version = "2.0.4"
 description = "Simple tool for parse common HTML to Telegram HTML"
 authors = [{ name = "Daniel Zakharov", email = "gzdan734@gmail.com" }]
 requires-python = ">=3.10,<3.15"
@@ -22,7 +22,7 @@ dependencies = [
 [tool.pdm.scripts]
 test = {cmd = "python -m unittest tests/tests.py"}
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "tghtml",
     "haitch>=0.15.0",
