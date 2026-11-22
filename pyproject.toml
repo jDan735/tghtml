@@ -1,24 +1,35 @@
-[tool.poetry]
+[project]
 name = "tghtml"
-version = "1.2.1"
+version = "2.0.4"
 description = "Simple tool for parse common HTML to Telegram HTML"
-authors = ["Daniel Zakharov <gzdan734@gmail.com>"]
+authors = [{ name = "Daniel Zakharov", email = "gzdan734@gmail.com" }]
+requires-python = ">=3.10,<3.15"
 license = "MIT"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "nh3>=0.3.4",
+    "pylatexenc>=2.10",
+    "selectolax>=0.4.7",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-beautifulsoup4 = "^4.10.0"
-markdownify = "^0.13.1"
-pyquery = "^2.0.0"
-markdown = "^3.6"
-pydantic = "^2.8.2"
+[tool.pdm.scripts]
+test = {cmd = "python -m unittest tests/tests.py"}
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.1"
+[project.optional-dependencies]
+dev = [
+    "tghtml",
+    "haitch>=0.15.0",
+]
 
-[tool.ruff]
-line-length = 70
+[tool.mypy]
+disable_error_code = ["import-untyped", "import-not-found"]
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.black]
+line-length = 80
