@@ -7,7 +7,7 @@ on:
     branches: [ main, dev ]
 
 jobs:
-  ty:
+  mypy:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,10 @@ jobs:
         cache: "pip"
 
     - name: Install dependencies
-      run: pip install ".[dev]" mypy
+      run: pip install ".[dev]"
 
-    - name: Type check with ty
+    - name: Install mypy
+      run: pip install mypy
+
+    - name: Type check with mypy
       run: mypy tghtml
