@@ -33,6 +33,7 @@ DEFAULT_BLOCKLIST = [
     ".noprint",
     ".floatright",
     ".error",
+    "div.preview-warning",
 ]
 
 
